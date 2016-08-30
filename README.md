@@ -3,9 +3,7 @@
 
 ![Version] (https://pypip.in/v/vintage/badge.png )
 
-Overview
-========
-
+See documentation at https://vintage.readthedocs.io
 
 Licence
 =======

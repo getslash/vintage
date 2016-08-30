@@ -15,8 +15,10 @@ def test_vintage(deprecated, expected_message):
     with _assert_single_deprecation() as w:
         deprecated()
     assert w.warning_message == expected_message
-    assert w.filename == __file__
-    assert w.lineno == lineno
+    if not hasattr(sys, 'pypy_version_info'):
+        # on pypy, functools is implemented in Python so the frame would be wrong
+        assert w.filename == __file__
+        assert w.lineno == lineno
 
 
 def test_deprecated_property(message):

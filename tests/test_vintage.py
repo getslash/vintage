@@ -1,5 +1,7 @@
+import sys
 import functools
 from contextlib import contextmanager
+import warnings
 
 import pytest
 
@@ -9,10 +11,12 @@ _EXPECTED_VALUE = 6
 
 
 def test_vintage(deprecated, expected_message):
+    lineno = _get_lineno() + 2
     with _assert_single_deprecation() as w:
         deprecated()
-    assert w.message == expected_message
-
+    assert w.warning_message == expected_message
+    assert w.filename == __file__
+    assert w.lineno == lineno
 
 def test_deprecated_property(message):
 
@@ -41,10 +45,19 @@ def expected_message(deprecated, message, deprecated_type):
         func = deprecated.func
         name = '{}.func'.format(__name__)
     assert func.__name__ == 'func'
-    returned = '{} is deprecated.'.format(name)
+    returned = '{} is deprecated'.format(name)
     if message:
-        returned += ' {}'.format(message)
+        returned += '. {}'.format(message)
     return returned
+
+def _get_lineno():
+    return sys._getframe(1).f_lineno # pylint: disable=protected-access
+
+def _unwrap_func(func):
+    func = func.func
+    if isinstance(func, vintage._DeprecatedFunction): # pylint: disable=protected-access
+        func = func._func  # pylint: disable=protected-access
+    return func
 
 @pytest.fixture(params=['method', 'function'])
 def deprecated_type(request):
@@ -92,9 +105,11 @@ def message(request):
 
 @contextmanager
 def _assert_single_deprecation():
-    with pytest.deprecated_call() as w:
-        yield _RecordProxy(w)
-    assert len(w) == 1, 'No single warning captured'
+    warnings.simplefilter('always')
+    with warnings.catch_warnings(record=True) as recorded:
+        yield _RecordProxy(recorded)
+    assert len(recorded) == 1, 'No single warning captured'
+    assert recorded[0].category == DeprecationWarning
 
 
 class _RecordProxy(object):
@@ -104,8 +119,13 @@ class _RecordProxy(object):
 
     def __getattr__(self, attr):
         # record.message is actually our warning
-        w = self._record[0].message
-        if attr == 'message':
-            assert len(w.args) == 1
-            return w.args[0]
-        return getattr(w, attr)
+        return getattr(self._record[0], attr)
+
+    @property
+    def warning_obj(self):
+        # warnings quirk - the message that is captured is actually the warning object
+        return self._record[0].message
+
+    @property
+    def warning_message(self):
+        return self.warning_obj.args[0]

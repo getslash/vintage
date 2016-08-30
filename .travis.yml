@@ -6,7 +6,7 @@ python:
 - '3.5'
 - pypy
 install:
-- pip install pytest
+- pip install 'pytest>=2.9'
 - pip install -e .
 script:
 - py.test tests

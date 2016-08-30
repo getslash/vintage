@@ -14,6 +14,22 @@ def test_vintage(deprecated, expected_message):
     assert w.message == expected_message
 
 
+def test_deprecated_property(message):
+
+    class Sample(object):
+
+        @property
+        @vintage.deprecated(message=message)
+        def prop(self):
+            return _EXPECTED_VALUE
+
+    with _assert_single_deprecation():
+        assert Sample().prop == _EXPECTED_VALUE
+
+def test_deprecated_doc(deprecated):
+    assert '.. deprecated' in [l.strip() for l in deprecated.func.__doc__.splitlines()]
+
+
 ##########################################################################
 
 @pytest.fixture
@@ -30,7 +46,6 @@ def expected_message(deprecated, message, deprecated_type):
         returned += ' {}'.format(message)
     return returned
 
-
 @pytest.fixture(params=['method', 'function'])
 def deprecated_type(request):
     return request.param
@@ -43,11 +58,14 @@ def deprecated(deprecated_type, message):
 
             @_deprecate(message)
             def func(self, a, b, c):
+                "docstring"
                 return a + b + c
+
         returned = Sample().func
     elif deprecated_type == 'function':
         @_deprecate(message)
         def func(a, b, c):
+            "docstring"
             return a + b + c
         returned = func
 
@@ -76,6 +94,7 @@ def message(request):
 def _assert_single_deprecation():
     with pytest.deprecated_call() as w:
         yield _RecordProxy(w)
+    assert len(w) == 1, 'No single warning captured'
 
 
 class _RecordProxy(object):

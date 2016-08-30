@@ -18,6 +18,7 @@ def test_vintage(deprecated, expected_message):
     assert w.filename == __file__
     assert w.lineno == lineno
 
+
 def test_deprecated_property(message):
 
     class Sample(object):
@@ -30,8 +31,19 @@ def test_deprecated_property(message):
     with _assert_single_deprecation():
         assert Sample().prop == _EXPECTED_VALUE
 
+
 def test_deprecated_doc(deprecated):
     assert '.. deprecated' in [l.strip() for l in deprecated.func.__doc__.splitlines()]
+
+
+def test_warn_deprecation():
+    message = 'this is a message'
+    lineno = _get_lineno() + 2
+    with _assert_single_deprecation() as w:
+        vintage.warn_deprecation(message)
+
+    assert w.lineno == lineno
+    assert w.warning_message == message
 
 
 ##########################################################################
@@ -50,14 +62,17 @@ def expected_message(deprecated, message, deprecated_type):
         returned += '. {}'.format(message)
     return returned
 
+
 def _get_lineno():
-    return sys._getframe(1).f_lineno # pylint: disable=protected-access
+    return sys._getframe(1).f_lineno  # pylint: disable=protected-access
+
 
 def _unwrap_func(func):
     func = func.func
-    if isinstance(func, vintage._DeprecatedFunction): # pylint: disable=protected-access
+    if isinstance(func, vintage._DeprecatedFunction):  # pylint: disable=protected-access
         func = func._func  # pylint: disable=protected-access
     return func
+
 
 @pytest.fixture(params=['method', 'function'])
 def deprecated_type(request):
@@ -123,7 +138,8 @@ class _RecordProxy(object):
 
     @property
     def warning_obj(self):
-        # warnings quirk - the message that is captured is actually the warning object
+        # warnings quirk - the message that is captured is actually the warning
+        # object
         return self._record[0].message
 
     @property

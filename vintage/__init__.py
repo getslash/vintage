@@ -3,6 +3,9 @@ import warnings
 
 from six import string_types
 
+def warn_deprecation(message, frame_correction=0):
+    warnings.warn(message, DeprecationWarning, stacklevel=2+frame_correction)
+
 
 class _DeprecatedFunction(object):
 
@@ -27,7 +30,7 @@ class _DeprecatedFunction(object):
         warning = "{0} is deprecated".format(self._get_func_str())
         if self._message is not None:
             warning += ". {0}".format(self._message)
-        warnings.warn(warning, DeprecationWarning, stacklevel=2)
+        warn_deprecation(warning, frame_correction=+1)
         if self._obj is not None:
             return func(self._obj, *args, **kwargs)
         elif self._objtype is not None:

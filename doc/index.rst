@@ -23,6 +23,10 @@ Decorate your functions with ``deprecated``, optionally providing a message:
        1: DeprecationWarning: __main__.my_old_func is deprecated.
        6
 
+You can also provide an explicit message:
+
+.. code-block:: python
+       
        >>> @deprecated(message='Use new_func instead')
        ... def my_old_func(a, b, c):
        ...     return a + b +c
@@ -32,7 +36,11 @@ Decorate your functions with ``deprecated``, optionally providing a message:
        6
 
 
-You can also provide an explicit message
+Deprecations can also be emitted by using a dedicated function:
+
+.. code-block:: python
+       
+       >>> vintage.warn_deprecation('use other thing')
 
 Table Of Contents
 -----------------

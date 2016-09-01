@@ -42,6 +42,18 @@ Deprecations can also be emitted by using a dedicated function:
        
        >>> vintage.warn_deprecation('use other thing')
 
+Suppressing Deprecations
+------------------------
+
+Vintage allows suppressing deprecations through the ``get_no_deprecations_context`` context:
+
+.. code-block:: python
+       
+       >>> with vintage.get_no_deprecations_context():
+       ...     # deprecated code here
+
+.. note:: The above context *does not* meddle with Python's warning mechanism, but rather suppresses Vintage deprecations only. This is useful as it does not interfere with current warning settings and/or capturing contexts. However, it means that other pieces of code emitting deprecation warnings directly would not get suppressed
+
 Table Of Contents
 -----------------
        

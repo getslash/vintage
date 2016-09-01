@@ -21,6 +21,25 @@ def test_vintage(deprecated, expected_message):
         assert w.lineno == lineno
 
 
+def test_get_no_deprecations_context_for_decorator(deprecated, expected_message):
+    with _assert_no_deprecation():
+        with vintage.get_no_deprecations_context():
+            deprecated()
+    with _assert_single_deprecation() as w:
+        deprecated()
+    assert w.warning_message == expected_message
+
+
+def test_get_no_deprecations_context_for_messages():
+    msg = 'Hello'
+    with _assert_no_deprecation():
+        with vintage.get_no_deprecations_context():
+            vintage.warn_deprecation(msg)
+    with _assert_single_deprecation() as w:
+        vintage.warn_deprecation(msg)
+    assert w.warning_message == msg
+
+
 def test_deprecated_property(message):
 
     class Sample(object):
@@ -127,6 +146,14 @@ def _assert_single_deprecation():
         yield _RecordProxy(recorded)
     assert len(recorded) == 1, 'No single warning captured'
     assert recorded[0].category == DeprecationWarning
+
+
+@contextmanager
+def _assert_no_deprecation():
+    warnings.simplefilter('always')
+    with warnings.catch_warnings(record=True) as recorded:
+        yield _RecordProxy(recorded)
+    assert len(recorded) == 0, 'Deprecation warning were captured'
 
 
 class _RecordProxy(object):

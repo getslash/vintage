@@ -1,10 +1,32 @@
+from contextlib import contextmanager
 import functools
+import threading
 import warnings
 
 from six import string_types
 
+
+class _Local(threading.local):
+    enabled = True
+
+_local = _Local()
+
+
+@contextmanager
+def get_no_deprecations_context():
+    """Disables deprecation messages temporarily
+    """
+    prev_enabled = _local.enabled
+    _local.enabled = False
+    try:
+        yield
+    finally:
+        _local.enabled = prev_enabled
+
+
 def warn_deprecation(message, frame_correction=0):
-    warnings.warn(message, DeprecationWarning, stacklevel=2+frame_correction)
+    if _local.enabled:
+        warnings.warn(message, DeprecationWarning, stacklevel=2+frame_correction)
 
 
 class _DeprecatedFunction(object):

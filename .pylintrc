@@ -1,0 +1,10 @@
+[MESSAGES CONTROL]
+disable=R,attribute-defined-outside-init,bad-option-value,invalid-name,locally-disabled,missing-docstring,redefined-builtin,ungrouped-imports,wrong-import-order,wrong-import-position
+
+[FORMAT]
+max-line-length=150
+
+[REPORTS]
+reports=no
+score=no
+output-format=parseable

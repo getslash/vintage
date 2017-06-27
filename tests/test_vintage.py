@@ -1,33 +1,33 @@
-import sys
 import functools
-from contextlib import contextmanager
+import sys
 import warnings
+from contextlib import contextmanager
 
 import pytest
-
 import vintage
 
+# pylint: disable=redefined-outer-name
 _EXPECTED_VALUE = 6
 
 
 def test_vintage(deprecated, expected_message):
     lineno = _get_lineno() + 2
-    with _assert_single_deprecation() as w:
+    with _assert_single_deprecation() as rp:
         deprecated()
-    assert w.warning_message == expected_message
+    assert rp.warning_message == expected_message
     if not hasattr(sys, 'pypy_version_info'):
         # on pypy, functools is implemented in Python so the frame would be wrong
-        assert w.filename == __file__
-        assert w.lineno == lineno
+        assert rp.filename == __file__
+        assert rp.lineno == lineno
 
 
 def test_get_no_deprecations_context_for_decorator(deprecated, expected_message):
     with _assert_no_deprecation():
         with vintage.get_no_deprecations_context():
             deprecated()
-    with _assert_single_deprecation() as w:
+    with _assert_single_deprecation() as rp:
         deprecated()
-    assert w.warning_message == expected_message
+    assert rp.warning_message == expected_message
 
 
 def test_get_no_deprecations_context_for_messages():
@@ -35,9 +35,9 @@ def test_get_no_deprecations_context_for_messages():
     with _assert_no_deprecation():
         with vintage.get_no_deprecations_context():
             vintage.warn_deprecation(msg)
-    with _assert_single_deprecation() as w:
+    with _assert_single_deprecation() as rp:
         vintage.warn_deprecation(msg)
-    assert w.warning_message == msg
+    assert rp.warning_message == msg
 
 
 def test_deprecated_property(message):
@@ -60,11 +60,11 @@ def test_deprecated_doc(deprecated):
 def test_warn_deprecation():
     message = 'this is a message'
     lineno = _get_lineno() + 2
-    with _assert_single_deprecation() as w:
+    with _assert_single_deprecation() as rp:
         vintage.warn_deprecation(message)
 
-    assert w.lineno == lineno
-    assert w.warning_message == message
+    assert rp.lineno == lineno
+    assert rp.warning_message == message
 
 
 ##########################################################################
@@ -86,13 +86,6 @@ def expected_message(deprecated, message, deprecated_type):
 
 def _get_lineno():
     return sys._getframe(1).f_lineno  # pylint: disable=protected-access
-
-
-def _unwrap_func(func):
-    func = func.func
-    if isinstance(func, vintage._DeprecatedFunction):  # pylint: disable=protected-access
-        func = func._func  # pylint: disable=protected-access
-    return func
 
 
 @pytest.fixture(params=['method', 'function'])
@@ -139,6 +132,7 @@ def message(request):
     return request.param
 
 
+
 @contextmanager
 def _assert_single_deprecation():
     warnings.simplefilter('always')
@@ -153,7 +147,7 @@ def _assert_no_deprecation():
     warnings.simplefilter('always')
     with warnings.catch_warnings(record=True) as recorded:
         yield _RecordProxy(recorded)
-    assert len(recorded) == 0, 'Deprecation warning were captured'
+    assert len(recorded) == 0, 'Deprecation warning were captured'  # pylint: disable=len-as-condition
 
 
 class _RecordProxy(object):

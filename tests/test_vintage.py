@@ -1,12 +1,12 @@
-import sys
 import functools
-from contextlib import contextmanager
+import sys
 import warnings
+from contextlib import contextmanager
 
 import pytest
-
 import vintage
 
+# pylint: disable=redefined-outer-name
 _EXPECTED_VALUE = 6
 
 
@@ -88,13 +88,6 @@ def _get_lineno():
     return sys._getframe(1).f_lineno  # pylint: disable=protected-access
 
 
-def _unwrap_func(func):
-    func = func.func
-    if isinstance(func, vintage._DeprecatedFunction):  # pylint: disable=protected-access
-        func = func._func  # pylint: disable=protected-access
-    return func
-
-
 @pytest.fixture(params=['method', 'function'])
 def deprecated_type(request):
     return request.param
@@ -139,6 +132,7 @@ def message(request):
     return request.param
 
 
+
 @contextmanager
 def _assert_single_deprecation():
     warnings.simplefilter('always')
@@ -153,7 +147,7 @@ def _assert_no_deprecation():
     warnings.simplefilter('always')
     with warnings.catch_warnings(record=True) as recorded:
         yield _RecordProxy(recorded)
-    assert len(recorded) == 0, 'Deprecation warning were captured'
+    assert len(recorded) == 0, 'Deprecation warning were captured'  # pylint: disable=len-as-condition
 
 
 class _RecordProxy(object):

@@ -21,6 +21,23 @@ def test_vintage(deprecated, expected_message):
         assert rp.lineno == lineno
 
 
+def test_deprecated_frame_correction():
+    message = 'Some message'
+    def some_function():
+        @vintage.deprecated(message=message, frame_correction=1)
+        def other_function():
+            pass
+        other_function()
+    lineno = _get_lineno() + 2
+    with _assert_single_deprecation() as rp:
+        some_function()
+    assert rp.warning_message == 'tests.test_vintage.other_function is deprecated. {}'.format(message)
+    if not hasattr(sys, 'pypy_version_info'):
+        # on pypy, functools is implemented in Python so the frame would be wrong
+        assert rp.filename == __file__
+        assert rp.lineno == lineno
+
+
 def test_get_no_deprecations_context_for_decorator(deprecated, expected_message):
     with _assert_no_deprecation():
         with vintage.get_no_deprecations_context():
@@ -53,8 +70,12 @@ def test_deprecated_property(message):
         assert Sample().prop == _EXPECTED_VALUE
 
 
-def test_deprecated_doc(deprecated):
-    assert '.. deprecated' in [l.strip() for l in deprecated.func.__doc__.splitlines()]
+def test_deprecated_doc(deprecated, since, message):
+    expected_since = '.. deprecated:: {}'.format(since) if since else '.. deprecated'
+    doc_lines = [l.strip() for l in deprecated.func.__doc__.splitlines()]
+    assert expected_since in doc_lines
+    if message is not None:
+        assert message in doc_lines
 
 
 def test_warn_deprecation():
@@ -70,14 +91,17 @@ def test_warn_deprecation():
 ##########################################################################
 
 @pytest.fixture
-def expected_message(deprecated, message, deprecated_type):
-    if deprecated_type == 'method':
-        func = deprecated.func._func  # pylint: disable=protected-access
-        name = 'Sample.func'
+def expected_message(deprecated, message, deprecated_type, what):
+    if what:
+        name = what
     else:
-        func = deprecated.func
-        name = '{}.func'.format(__name__)
-    assert func.__name__ == 'func'
+        if deprecated_type == 'method':
+            func = deprecated.func._func  # pylint: disable=protected-access
+            name = 'Sample.func'
+        else:
+            func = deprecated.func
+            name = '{}.func'.format(__name__)
+        assert func.__name__ == 'func'
     returned = '{} is deprecated'.format(name)
     if message:
         returned += '. {}'.format(message)
@@ -94,18 +118,18 @@ def deprecated_type(request):
 
 
 @pytest.fixture
-def deprecated(deprecated_type, message):
+def deprecated(deprecated_type, message, since, what):
     if deprecated_type == 'method':
         class Sample(object):
 
-            @_deprecate(message)
+            @_deprecate(message=message, since=since, what=what)
             def func(self, a, b, c):
                 "docstring"
                 return a + b + c
 
         returned = Sample().func
     elif deprecated_type == 'function':
-        @_deprecate(message)
+        @_deprecate(message=message, since=since, what=what)
         def func(a, b, c):
             "docstring"
             return a + b + c
@@ -116,13 +140,12 @@ def deprecated(deprecated_type, message):
 
     return functools.partial(returned, 1, 2, _EXPECTED_VALUE - 1 - 2)
 
-
-def _deprecate(message):
+def _deprecate(**kwargs):
     """Helper to sometimes simulate calling ``deprecated`` with parameters and sometimes plainly without any arguments
     """
     def decorator(func):
-        if message:
-            return vintage.deprecated(message=message)(func)
+        if kwargs and set(kwargs.values()) != set([None]):
+            return vintage.deprecated(**kwargs)(func)
         return vintage.deprecated(func)
     return decorator
 
@@ -131,6 +154,15 @@ def _deprecate(message):
 def message(request):
     return request.param
 
+
+@pytest.fixture(params=[None, '3.2.1'])
+def since(request):
+    return request.param
+
+
+@pytest.fixture(params=[None, 'my.special_function'])
+def what(request):
+    return request.param
 
 
 @contextmanager

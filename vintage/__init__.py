@@ -31,12 +31,15 @@ def warn_deprecation(message, frame_correction=0):
 
 class _DeprecatedFunction(object):
 
-    def __init__(self, func, message, obj=None, objtype=None):
+    def __init__(self, func, message, obj=None, objtype=None, since=None, what=None, frame_correction=None):
         super(_DeprecatedFunction, self).__init__()
         self._func = func
         self._message = message
         self._obj = obj
         self._objtype = objtype
+        self._frame_correction = 0 if frame_correction is None else frame_correction
+        self._what = what
+        self._since = since
 
     def _get_underlying_func(self):
         returned = self._func
@@ -52,7 +55,7 @@ class _DeprecatedFunction(object):
         warning = "{0} is deprecated".format(self._get_func_str())
         if self._message is not None:
             warning += ". {0}".format(self._message)
-        warn_deprecation(warning, frame_correction=+1)
+        warn_deprecation(warning, frame_correction=self._frame_correction+1)
         if self._obj is not None:
             return func(self._obj, *args, **kwargs)
         elif self._objtype is not None:
@@ -60,6 +63,8 @@ class _DeprecatedFunction(object):
         return func(*args, **kwargs)
 
     def _get_func_str(self):
+        if self._what:
+            return self._what
         func = self._get_underlying_func()
         if self._objtype is not None:
             return '{0}.{1}'.format(self._objtype.__name__, func.__name__)
@@ -69,7 +74,8 @@ class _DeprecatedFunction(object):
         return self.bound_to(obj, objtype)
 
     def bound_to(self, obj, objtype):
-        return _DeprecatedFunction(self._func, self._message, obj=obj, objtype=objtype)
+        return _DeprecatedFunction(self._func, self._message, obj=obj, objtype=objtype, since=self._since,
+                                   what=self._what, frame_correction=self._frame_correction)
 
     @property
     def __name__(self):
@@ -77,11 +83,13 @@ class _DeprecatedFunction(object):
 
     @property
     def __doc__(self):
-        returned = self._get_underlying_func().__doc__
-        if returned:  # pylint: disable=no-member
-            returned += "\n.. deprecated\n"  # pylint: disable=no-member
-            if self._message:
-                returned += "   {0}".format(self._message)  # pylint: disable=no-member
+        returned = self._get_underlying_func().__doc__ or ''
+        returned += "\n.. deprecated"
+        if self._since:
+            returned += ':: {}'.format(self._since)
+        returned += "\n"
+        if self._message:
+            returned += "   {0}".format(self._message)
         return returned
 
     @__doc__.setter
@@ -89,7 +97,7 @@ class _DeprecatedFunction(object):
         self._get_underlying_func().__doc__ = doc
 
 
-def deprecated(func=None, message=None):
+def deprecated(func=None, message=None, since=None, what=None, frame_correction=None):
     """Marks the specified function as deprecated, and emits a warning when
     it's called.
 
@@ -108,6 +116,9 @@ def deprecated(func=None, message=None):
         func = None
 
     if func is None:
-        return functools.partial(deprecated, message=message)
+        return functools.partial(
+            deprecated,
+            message=message, since=since, what=what,
+            frame_correction=frame_correction)
 
-    return _DeprecatedFunction(func, message)
+    return _DeprecatedFunction(func, message, since=since, what=what, frame_correction=frame_correction)

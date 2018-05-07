@@ -19,3 +19,4 @@ deploy:
   on:
     tags: true
     repo: getslash/vintage
+    python: '3.6'

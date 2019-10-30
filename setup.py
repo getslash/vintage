@@ -14,7 +14,6 @@ with open('README.md') as readme_file:
 
 setup(name="vintage",
       classifiers = [
-          "Programming Language :: Python :: 2.7",
           "Programming Language :: Python :: 3.5",
           "Programming Language :: Python :: 3.6",
           ],
@@ -26,7 +25,7 @@ setup(name="vintage",
       author_email="vmalloc@gmail.com",
       version=__version__, # pylint: disable=E0602
       packages=find_packages(exclude=["tests"]),
-
+      python_requires=">=3.5.*",
       url="https://github.com/getslash/vintage",
 
       install_requires=_INSTALL_REQUIERS,

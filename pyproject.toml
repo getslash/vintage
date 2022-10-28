@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vintage"
+description = "Python library for deprecating code"
+readme = "README.md"
+requires-python = ">=3.7"
+license = { text = "BSD 3-Clause License" }
+
+classifiers = [
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "six",
+]
+dynamic = ["version"]
+
+authors = [
+    { name = "Rotem Yaari", email = "vmalloc@gmail.com" },
+]
+
+[project.urls]
+"Homepage" = "https://github.com/getslash/vintag"
+
+[project.optional-dependencies]
+testing = [
+    "pytest>=2.9",
+    "pylint>=1.7.2",
+]
+doc = [
+    "Sphinx",
+    "alabaster",
+    "releases",
+]

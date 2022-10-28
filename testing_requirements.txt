@@ -1,2 +1,0 @@
-pytest>=2.9
-pylint>=1.7.2

@@ -6,9 +6,9 @@ test: env
 env: .env/.up-to-date
 
 doc: env
-	.env/bin/python setup.py build_sphinx -a -E
+	.env/bin/sphinx-build -a -W -E doc build/sphinx/html
 
-.env/.up-to-date: setup.py pyproject.toml
+.env/.up-to-date: pyproject.toml
 	python -m venv .env
 	.env/bin/pip install -e '.[testing,doc]'
 	touch $@

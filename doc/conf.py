@@ -110,7 +110,6 @@ html_theme_options = {
     'github_repo': 'vintage',
     'github_button': True,
     'github_banner': True,
-    'travis_button': 'getslash/vintage',
 }
 html_sidebars = {
    '**': [

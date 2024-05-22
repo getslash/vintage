@@ -1,31 +1,27 @@
 from contextlib import contextmanager
+from contextvars import ContextVar
 import functools
-import threading
 import warnings
 
 from six import string_types
 
 
-class _Local(threading.local):
-    enabled = True
-
-_local = _Local()
+_deprecation_warning_enabled: ContextVar[bool] = ContextVar('_deprecation_warning_enabled', default=True)
 
 
 @contextmanager
 def get_no_deprecations_context():
     """Disables deprecation messages temporarily
     """
-    prev_enabled = _local.enabled
-    _local.enabled = False
+    previous_enabled = _deprecation_warning_enabled.set(False)
     try:
         yield
     finally:
-        _local.enabled = prev_enabled
+        _deprecation_warning_enabled.reset(previous_enabled)
 
 
 def warn_deprecation(message, frame_correction=0):
-    if _local.enabled:
+    if _deprecation_warning_enabled.get():
         warnings.warn(message, DeprecationWarning, stacklevel=2+frame_correction)
 
 

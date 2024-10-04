@@ -3,8 +3,6 @@ from contextvars import ContextVar
 import functools
 import warnings
 
-from six import string_types
-
 
 _deprecation_warning_enabled: ContextVar[bool] = ContextVar('_deprecation_warning_enabled', default=True)
 
@@ -106,7 +104,7 @@ def deprecated(func=None, message=None, since=None, what=None, frame_correction=
 
     .. versionadded:: 0.12
     """
-    if isinstance(func, string_types):
+    if isinstance(func, str):
         assert message is None
         message = func
         func = None

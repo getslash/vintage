@@ -1,6 +1,8 @@
 Changelog
 =========
 
+* :feature:`-` Support python versions: >= 3.8, <= 3.13
+* :feature:`-` Use UV in CI
 * :feature:`-` Use `pyproject.toml` from package configuration
 * :feature:`-` Move CI to GitHub Actions (from Travis CI)
 * :feature:`-` Support python version 3.8, 3.9, 3.10, 3.11

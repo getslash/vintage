@@ -23,7 +23,7 @@ dynamic = ["version"]
 authors = [{ name = "Rotem Yaari", email = "vmalloc@gmail.com" }]
 
 [project.urls]
-"Homepage" = "https://github.com/getslash/vintag"
+"Homepage" = "https://github.com/getslash/vintage"
 
 [project.optional-dependencies]
 testing = ["pytest>=2.9", "pylint>=1.7.2"]

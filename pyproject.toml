@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=0.25.1", "hatch-vcs"]
+build-backend = "hatchling.build"
 
 [project]
 name = "vintage"
@@ -20,20 +20,14 @@ classifiers = [
 dependencies = []
 dynamic = ["version"]
 
-authors = [
-    { name = "Rotem Yaari", email = "vmalloc@gmail.com" },
-]
+authors = [{ name = "Rotem Yaari", email = "vmalloc@gmail.com" }]
 
 [project.urls]
-"Homepage" = "https://github.com/getslash/vintag"
+"Homepage" = "https://github.com/getslash/vintage"
 
 [project.optional-dependencies]
-testing = [
-    "pytest>=2.9",
-    "pylint>=1.7.2",
-]
-doc = [
-    "Sphinx",
-    "alabaster",
-    "releases",
-]
+testing = ["pytest>=2.9", "pylint>=1.7.2"]
+doc = ["Sphinx", "alabaster", "releases"]
+
+[tool.hatch.version]
+source = "vcs"
